@@ -1,7 +1,6 @@
 import discord
 import aiohttp
 import asyncio
-from threading import Thread
 import os
 import time
 from discord.ext import commands, tasks
