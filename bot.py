@@ -4,6 +4,7 @@ import json
 from urllib.parse import urlparse, unquote
 import discord
 import aiohttp
+import datetime
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
@@ -181,13 +182,13 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Mensaje de bienvenida con cooldown
     if message.author.name == "tutankanon":
-        now = time.time()
-        last = cooldown_user.get(message.author.id, 0)
-        if now - last > 120:
+        today = datetime.date.today()
+        last_date = cooldown_user.get(message.author.id)
+        
+        if last_date != today:
             await message.channel.send("QUE PASA EQUIPO")
-            cooldown_user[message.author.id] = now
+            cooldown_user[message.author.id] = today
 
     # Respuestas automáticas
     content = message.content.lower()
