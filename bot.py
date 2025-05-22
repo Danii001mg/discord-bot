@@ -8,15 +8,6 @@ import datetime
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-'''***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***'''
-
 # Load .env
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
