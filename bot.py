@@ -5,6 +5,8 @@ from urllib.parse import urlparse, unquote
 import discord
 import aiohttp
 import datetime
+import yt_dlp
+from discord import FFmpegPCMAudio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
@@ -307,5 +309,39 @@ async def skins(ctx):
     if excluded:
         uniques = ", ".join(sorted(set(excluded)))
         await ctx.send(f"Excluidos: {uniques}")
+    
+@bot.command()
+async def play(ctx, *, url: str):
+   
+    voice_channel = bot.get_channel(CHANNEL_ID)
+    if not voice_channel or not isinstance(voice_channel, discord.VoiceChannel):
+        return await ctx.send("❌ Canal de voz no encontrado.")
+
+    if ctx.voice_client is None:
+        vc = await voice_channel.connect()
+    else:
+        vc = ctx.voice_client
+        if vc.channel.id != voice_channel.id:
+            await vc.move_to(voice_channel)
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'quiet': True,
+        'noplaylist': True,
+        'default_search': 'auto'
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        if 'entries' in info:
+            info = info['entries'][0]
+        audio_url = info['url']
+
+    source = FFmpegPCMAudio(
+        audio_url,
+        before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+    )
+    vc.play(source, after=lambda e: print(f"[PLAY] Terminado: {e}") if e else None)
+
+    await ctx.send(f"▶️ Reproduciendo **{info.get('title', 'desconocido')}**")
 
 bot.run(TOKEN)
