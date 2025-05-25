@@ -167,8 +167,7 @@ async def check_twitch_stream():
 @bot.event
 async def on_ready():
     print(f"Bot connected as {bot.user}")
-    if not check_twitch_stream.is_running():
-        check_twitch_stream.start()
+    check_twitch_stream.start()
 
 @bot.event
 async def on_message(message):
