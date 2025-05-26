@@ -35,7 +35,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 twitch_token = None
 user_live_status = False
 
-# Cooldown tracking
+
 cooldown_user = {}
 
 # Price API
