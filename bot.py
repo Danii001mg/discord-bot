@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import json
 from urllib.parse import urlparse, unquote
@@ -10,6 +11,7 @@ from discord import FFmpegPCMAudio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
+sys.stdout.reconfigure(line_buffering=True)
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
