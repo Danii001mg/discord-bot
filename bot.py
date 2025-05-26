@@ -10,6 +10,11 @@ import yt_dlp
 from discord import FFmpegPCMAudio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
+import asyncio
+
+INACTIVITY_TIMEOUT = 300
+last_play_time = None
+inactivity_task = None
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -342,8 +347,44 @@ async def play(ctx, *, url: str):
         audio_url,
         before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
     )
+    global last_play_time
+    last_play_time = time.time()
+
+    global inactivity_task
+    if inactivity_task and not inactivity_task.done():
+        inactivity_task.cancel()
+    
+    inactivity_task = asyncio.create_task(auto_disconnect_after_inactivity(vc))
     vc.play(source, after=lambda e: print(f"[PLAY] Terminado: {e}") if e else None)
 
     await ctx.send(f"▶️ Reproduciendo **{info.get('title', 'desconocido')}**")
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    if member.id != bot.user.id:
+        return
+
+    if before.channel is not None and after.channel is None:
+        print("[VOICE] Bot desconectado manualmente.")
+        if member.guild.voice_client:
+            await member.guild.voice_client.disconnect(force=True)
+
+        global inactivity_task
+        if inactivity_task and not inactivity_task.done():
+            inactivity_task.cancel()
+            inactivity_task = None
+            
+async def auto_disconnect_after_inactivity(vc):
+    global last_play_time
+    while True:
+        await asyncio.sleep(60)
+        if vc.is_playing():
+            last_play_time = time.time()
+        elif last_play_time and (time.time() - last_play_time > INACTIVITY_TIMEOUT):
+            await vc.disconnect(force=True)
+            print("[VOICE] Desconectado por inactividad.")
+            last_play_time = None
+            break
+
 
 bot.run(TOKEN)
