@@ -28,6 +28,7 @@ VOICE_ID = int(os.getenv("VOICE_ID"))
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 intents = discord.Intents.default()
+intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -51,6 +52,7 @@ EXCLUDED_ITEMS = {
     "Twitch Rivals Trophy",
     "Retro Tool Cupboard",
     "Brutalist",
+    "Brutalist Building Skin",
     "Weapon Racks",
     "Brick",
     "Nomad Outfit",
@@ -166,12 +168,20 @@ async def check_twitch_stream():
     is_live = await check_if_live()
     channel = bot.get_channel(CHANNEL_ID)
 
+    guild = bot.get_guild(channel.guild.id)
+    target_username = "masmacrosquepr"
+
+    member = discord.utils.get(guild.members, name=target_username)
+
+    if not member:
+        print(f"[ERROR] No se encontró ningún miembro con el nombre '{target_username}' en el servidor.")
+        return
+
     if is_live and not user_live_status:
         user_live_status = True
-        await channel.send(f"Iwavi en directo wilsons\nhttps://www.twitch.tv/{TWITCH_USER_LOGIN}")
+        await channel.send(f"Iwavi en directo wilsons {member.mention}\nhttps://www.twitch.tv/{TWITCH_USER_LOGIN}")
     elif not is_live and user_live_status:
         user_live_status = False
-
 @bot.event
 async def on_ready():
     print(f"Bot connected as {bot.user}")
