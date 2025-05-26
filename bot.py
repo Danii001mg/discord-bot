@@ -10,7 +10,7 @@ from discord import FFmpegPCMAudio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-#e
+
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
