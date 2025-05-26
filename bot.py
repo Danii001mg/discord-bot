@@ -23,6 +23,8 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 TWITCH_USER_LOGIN = os.getenv("TWITCH_USER_LOGIN")
+TWITCH_TARGET_LOGIN = "dahvys"
+MI_DISCORD_ID = 333786075292237825
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 VOICE_ID = int(os.getenv("VOICE_ID"))
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -32,10 +34,9 @@ intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-
 twitch_token = None
 user_live_status = False
-
+target_user_live = False
 
 cooldown_user = {}
 
@@ -162,9 +163,30 @@ async def check_if_live():
             data = await resp.json()
             return bool(data.get("data"))
 
+async def is_another_user_live(user_login):
+    global twitch_token
+    if not twitch_token:
+        twitch_token = await get_twitch_token()
+
+    url = f"https://api.twitch.tv/helix/streams?user_login={user_login}"
+    headers = {
+        "Client-ID": TWITCH_CLIENT_ID,
+        "Authorization": f"Bearer {twitch_token}"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as resp:
+            if resp.status == 401:
+                twitch_token = await get_twitch_token()
+                return await is_user_live(user_login)
+            data = await resp.json()
+            return bool(data.get("data"))
+
+
 @tasks.loop(seconds=60)
 async def check_twitch_stream():
     global user_live_status
+    global target_user_live
     is_live = await check_if_live()
     channel = bot.get_channel(CHANNEL_ID)
 
@@ -182,6 +204,15 @@ async def check_twitch_stream():
         await channel.send(f"Iwavi en directo wilsons {member.mention}\nhttps://www.twitch.tv/{TWITCH_USER_LOGIN}")
     elif not is_live and user_live_status:
         user_live_status = False
+
+    
+    if target_live and not target_user_live:
+        target_user_live = True
+        user = await bot.fetch_user(MI_DISCORD_ID)
+        await user.send(f"🔴 Dahvys está en directo:\nhttps://www.twitch.tv/{TWITCH_TARGET_LOGIN}")
+    elif not target_live and target_user_live:
+        target_user_live = False
+        
 @bot.event
 async def on_ready():
     print(f"Bot connected as {bot.user}")
