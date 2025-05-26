@@ -19,6 +19,7 @@ TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 TWITCH_USER_LOGIN = os.getenv("TWITCH_USER_LOGIN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+VOICE_ID = int(os.getenv("VOICE_ID"))
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 intents = discord.Intents.default()
@@ -314,7 +315,7 @@ async def skins(ctx):
 @bot.command()
 async def play(ctx, *, url: str):
    
-    voice_channel = bot.get_channel(CHANNEL_ID)
+    voice_channel = bot.get_channel(VOICE_ID)
     if not voice_channel or not isinstance(voice_channel, discord.VoiceChannel):
         return await ctx.send("❌ Canal de voz no encontrado.")
 
